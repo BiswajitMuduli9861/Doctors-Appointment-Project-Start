@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* HARD RESET */
+/* @layer base {
+  html, body {
+    background-color: white !important;
+    color: black !important;
+    min-height: 100vh;
+  }
+} */
+
+@layer utilities {
+  .force-light {
+    background-color: white;
+    color: black;
+    min-height: 100vh;
+  }
+}
+
+.active hr{
+  @apply block;
+}
+::-webkit-scrollbar{
+  @apply hidden;
+}
