@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 
 /* HARD RESET */
@@ -8,7 +9,9 @@
     min-height: 100vh;
   }
 } */
-
+*{
+  font-family: Outfit;
+}
 @layer utilities {
   .force-light {
     background-color: white;
