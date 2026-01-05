@@ -26,3 +26,42 @@
 ::-webkit-scrollbar{
   @apply hidden;
 }
+.hoverEffect{
+  background-color: white;
+  color:gray;
+}
+.hoverEffect:hover{
+  background-color: black;
+  color: white;
+}
+.pay_online_button{
+  background-color: transparent;
+  color: gray;
+}
+.pay_online_button:hover{
+  background-color: #0250C4;
+  color: white;
+}
+.cancel_appointment_button{
+   background-color: transparent;
+  color: gray;
+}
+.cancel_appointment_button:hover{
+  background-color: red;
+  color: white;
+}
+@media (max-width:740px) {
+  .active p{
+    background-color: #0250C4;
+    color: white;
+  }
+}
+
+.filter_button{
+  background-color: #0250C4;
+  color: white;
+}
+.filter_button_false{
+  background-color: transparent;
+  color: gray;
+}
