@@ -65,3 +65,11 @@
   background-color: transparent;
   color: gray;
 }
+
+
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #dc2626 !important;   /* red-600 */
+}
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #007C00 !important;   /* green-600 */
+}

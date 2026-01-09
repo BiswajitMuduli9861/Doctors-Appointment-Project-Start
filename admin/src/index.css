@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import "tailwindcss";
+
+/* @layer utilities {
+  .force-light {
+    background-color: white;
+    color: black;
+    min-height: 100vh;
+  }
+} */
+
+@layer base {
+  html, body {
+    background-color: white !important;
+    color: black !important;
+    min-height: 100vh;
+  }
+}
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #dc2626 !important;   /* red-600 */
+}
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #007C00 !important;   /* green-600 */
+}
+::-webkit-scrollbar{
+  @apply hidden
+}
+
+*{
+  font-family: Outfit;
+}
