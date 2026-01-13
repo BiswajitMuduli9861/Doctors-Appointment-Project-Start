@@ -261,7 +261,7 @@ const paymentCashfree = async (req, res) => {
 const verifyCashfree = async (req, res) => {
   try {
     const { order_id, appointment_id } = req.body;
-    console.log(order_id, appointment_id)
+    // console.log(order_id, appointment_id)
     const response = await cashfree.PGFetchOrder(order_id);
 
     // console.log(response)

@@ -11,7 +11,7 @@
 
 @layer base {
   html, body {
-    background-color: white !important;
+    background-color: rgb(246, 242, 242) !important;
     color: black !important;
     min-height: 100vh;
   }
