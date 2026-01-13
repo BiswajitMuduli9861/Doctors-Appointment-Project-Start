@@ -1,81 +1,140 @@
-import React, { useContext, useEffect,useState } from 'react'
-import { useParams } from 'react-router-dom'
+import React, { useContext, useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import { assets } from '../assets/assets'
 import RelatedDoctors from '../components/RelatedDoctors'
+import { toast } from 'react-toastify'
+import axios from 'axios'
 
 const Appointment = () => {
-  const {docId} = useParams()
-  const {doctors,currencySymbol} = useContext(AppContext)
-  
+  const navigate = useNavigate()
+  const { docId } = useParams()
+  const { doctors, currencySymbol, backendUrl, token, getDoctorsData } = useContext(AppContext)
+
   const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
   const [docInfo, setDocInfo] = useState(null)
   const [docSlots, setDocSlots] = useState([])
   const [slotIndex, setSlotIndex] = useState(0)
   const [slotTime, setSlotTime] = useState('')
 
-  const fetchDocInfo = () =>{
+  const fetchDocInfo = () => {
     const docInfo = doctors.find(doc => doc._id === docId)
     setDocInfo(docInfo)
-    // console.log(docInfo)
+    // console.log(docInfo,23)
+    // console.log(doctors)
   }
-  
-  const getAvailbableSlots = () =>{
-      setDocSlots([])
 
-      //getting current date
-      let today = new Date()
+  const getAvailbableSlots = () => {
+      if (!docInfo || !docInfo.slots_booked) return; 
+    setDocSlots([])
 
-      for(let i =0 ; i<7 ; i++){
-        let currentDate = new Date(today)
-        currentDate.setDate(today.getDate()+i);
+    //getting current date
+    let today = new Date()
 
-        //setting end time of the date with index
-        let endTime = new Date();
-        endTime.setDate(today.getDate()+i)
-        endTime.setHours(21,0,0,0)
+    for (let i = 0; i < 7; i++) {
+      let currentDate = new Date(today)
+      currentDate.setDate(today.getDate() + i);
 
-        //setting hours
-        if(today.getDate() === currentDate.getDate()){
-          currentDate.setHours(currentDate.getHours() >10 ? currentDate.getHours() + 1 : 10)
-          currentDate.setMinutes(currentDate.getMinutes() > 30 ? 30 : 0)
+      //setting end time of the date with index
+      let endTime = new Date();
+      endTime.setDate(today.getDate() + i)
+      endTime.setHours(21, 0, 0, 0)
 
-        }else{
-          currentDate.setHours(10)
-          currentDate.setMinutes(0)
-        }
+      //setting hours
+      if (today.getDate() === currentDate.getDate()) {
+        currentDate.setHours(currentDate.getHours() > 10 ? currentDate.getHours() + 1 : 10)
+        currentDate.setMinutes(currentDate.getMinutes() > 30 ? 30 : 0)
 
-        let timeSlots = []
-
-        while(currentDate < endTime){
-          let formattedTime = currentDate.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"})
-
-          // add slot to array
-          timeSlots.push({
-            datetime: new Date(currentDate),
-            time: formattedTime
-          })
-
-          // Increment current time by 30 minutes
-          currentDate.setMinutes(currentDate.getMinutes() +30)
-
-        }
-
-        setDocSlots(prev => ([...prev, timeSlots]))
+      } else {
+        currentDate.setHours(10)
+        currentDate.setMinutes(0)
       }
+
+      let timeSlots = []
+
+      while (currentDate < endTime) {
+        let formattedTime = currentDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+
+        let day = currentDate.getDate()
+        let month = currentDate.getMonth() + 1 // Months are zero-based
+        let year = currentDate.getFullYear()
+        const slotDate = day + "_" + month + "_" + year
+
+        const isSlotAvailable = docInfo.slots_booked[slotDate] && docInfo.slots_booked[slotDate].includes(formattedTime) ? false : true
+
+        // if (isSlotAvailable) {
+        //   // add slot to array
+        //   timeSlots.push({
+        //     datetime: new Date(currentDate),
+        //     time: formattedTime
+        //   })
+        // }
+
+        timeSlots.push({
+  datetime: new Date(currentDate),
+  time: formattedTime,
+  isBooked: !isSlotAvailable
+})
+
+
+        // Increment current time by 30 minutes
+        currentDate.setMinutes(currentDate.getMinutes() + 30)
+
+      }
+
+      setDocSlots(prev => ([...prev, timeSlots]))
+    }
   }
 
-  useEffect(()=>{
+  const bookAppointment = async () => {
+
+     // 🔒 BLOCK BOOKED SLOT
+  const selectedSlot = docSlots[slotIndex].find(s => s.time === slotTime)
+
+  if (selectedSlot?.isBooked) {
+    return toast.error("This slot is already booked")
+  }
+
+    if (!token) {
+      toast.warn('Login to book appointment', { className: " !bg-[white] !text-black" })
+      return navigate('/login')
+    }
+    try {
+      const date = docSlots[slotIndex][0].datetime
+
+      let day = date.getDate()
+      let month = date.getMonth() + 1 // Months are zero-based
+      let year = date.getFullYear()
+
+
+      const slotDate = day + "_" + month + "_" + year
+      // console.log(slotDate,85)
+      // console.log(docId,86)
+      const { data } = await axios.post(backendUrl + '/api/user/book-appointment', { docId, slotDate, slotTime }, { headers: { token } });
+      if (data.success) {
+        toast.success(data.message, { className: " !bg-[white] !text-black" })
+        getDoctorsData()
+        navigate('/my-appointments')
+      } else {
+        toast.error(data.message, { className: " !bg-[white] !text-black" })
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message, { className: " !bg-[white] !text-black" })
+    }
+  }
+
+  useEffect(() => {
     fetchDocInfo()
-  },[doctors,docId])
+  }, [doctors, docId])
 
-  useEffect(()=>{
+  useEffect(() => {
     getAvailbableSlots()
-  },[docInfo])
+  }, [docInfo])
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(docSlots)
-  },[docSlots])
+  }, [docSlots])
   return docInfo && ( //||doctor &&||  info ke alaba use kar sakti ho ||<img src={docInfo?.image} alt="" />||
     <div>
       {/* --------- Doctor Details --------- */}
@@ -88,8 +147,8 @@ const Appointment = () => {
           <p className='flex items-center gap-2 text-2xl font-medium text-gray-900'>{docInfo.name}</p> <img className='w-5' src={assets.verified_icon} alt="verified_icon" />
           <div>
 
-          <p>{docInfo.degree} - {docInfo.speciality}</p>
-          <button style={{backgroundColor:"inherit", color:"gray"}} className='py-0.5 px-2 border text-xs rounded-full'>{docInfo.experience}</button>
+            <p>{docInfo.degree} - {docInfo.speciality}</p>
+            <button style={{ backgroundColor: "inherit", color: "gray" }} className='py-0.5 px-2 border text-xs rounded-full'>{docInfo.experience}</button>
           </div>
           {/* ------ Doctor About ------ */}
           <div>
@@ -98,15 +157,15 @@ const Appointment = () => {
           </div>
           <p className='text-gray-500 font-medium mt-4'>Appointment fee: <span className='text-gray-600'>{currencySymbol}{docInfo.fees}</span></p>
         </div>
-      </div> 
+      </div>
       {/* ------ Booking slots ------- */}
       <div className='sm:ml-72 sm:pl-4 mt-4 font-medium text-gray-700'>
         <p>Booking slots</p>
         <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
           {
-            docSlots.length && docSlots.map((item,index)=>(
-             
-              <div onClick={()=> setSlotIndex(index)} key={index} className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-[#0250C4] text-white' : 'border border-gray-200'}`}>
+            docSlots.length && docSlots.map((item, index) => (
+
+              <div onClick={() => setSlotIndex(index)} key={index} className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-[#0250C4] text-white' : 'border border-gray-200'}`}>
                 <p>{item[0] && daysOfWeek[item[0].datetime.getDay()]}</p>
                 <p>{item[0] && item[0].datetime.getDate()}</p>
               </div>
@@ -115,18 +174,38 @@ const Appointment = () => {
         </div>
         <div className='flex items-center gap-3 w-full overflow-x-scroll mt-4'>
           {
-            docSlots.length && docSlots[slotIndex].map((item,index)=>(
-              <p onClick={()=> setSlotTime(item.time)} key={index} className={`text-sm font-light shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-[#0250C4] text-white' : 'text-gray-400 border border-gray-300'}`}>
-                {item.time}
-              </p>
+            docSlots.length && docSlots[slotIndex].map((item, index) => (
+              // <p onClick={() => setSlotTime(item.time)} key={index} className={`text-sm font-light shrink-0 px-5 py-2 rounded-full cursor-pointer ${item.time === slotTime ? 'bg-[#0250C4] text-white' : 'text-gray-400 border border-gray-300'}`}>
+              //   {item.time}
+              // </p>
+              <p
+  onClick={() => !item.isBooked && setSlotTime(item.time)}
+  className={`text-sm font-light shrink-0 px-5 py-2 rounded-full cursor-pointer relative
+  ${
+    item.isBooked
+      ? 'bg-gray-200 text-gray-500 hover:cursor-not-allowed'
+      : item.time === slotTime
+      ? 'bg-[#0250C4] text-white'
+      : 'text-gray-400 border border-gray-300 '
+  }`}
+>
+  {item.time}
+
+  {item.isBooked && (
+    <span className="absolute -top-0.5 left-1/2 -translate-x-1/2 text-[10px] bg-red-500 text-white px-2 rounded-full ">
+      BOOKED
+    </span>
+  )}
+</p>
+
             ))
           }
         </div>
-        <button style={{backgroundColor:"#0250C4", color:"white"}} className='text-sm font-light px-14 py-3 rounded-full my-6'>Book Appointment</button>
+        <button onClick={bookAppointment} style={{ backgroundColor: "#0250C4", color: "white" }} className='text-sm font-light px-14 py-3 rounded-full my-6 cursor-pointer'>Book Appointment</button>
       </div>
 
       {/* ------ Listing Related Doctors ------ */}
-          <RelatedDoctors docId={docId} speciality={docInfo.speciality}/>
+      <RelatedDoctors docId={docId} speciality={docInfo.speciality} />
     </div>
   )
 }

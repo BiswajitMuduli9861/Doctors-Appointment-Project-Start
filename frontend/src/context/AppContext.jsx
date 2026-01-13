@@ -11,13 +11,15 @@ const AppContextProvider = (props) => {
     const [userData, setUserData] = useState(false)
     const currencySymbol = '₹'
     const backendUrl = import.meta.env.VITE_BACKEND_URL
-
+console.log(doctors)
 
     const getDoctorsData = async () => {
         try {
             const { data } = await axios.get(backendUrl + '/api/doctor/list')
             if (data.success) {
                 setDoctors(data.doctors)
+                console.log(data.doctors)
+                console.log(doctors)
             } else {
                 toast.error(data.message, {
                     className: " !bg-[white] !text-black"
@@ -52,7 +54,7 @@ const AppContextProvider = (props) => {
 
 
     const value = {
-        doctors,
+        doctors,getDoctorsData,
         currencySymbol,
         token, setToken,
         backendUrl,

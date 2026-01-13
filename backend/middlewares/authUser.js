@@ -9,10 +9,10 @@ const authUser = async(req, res, next) => {
         }
         const token_decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // req.body = { userId: token_decoded.id };   //tranfer the userId to getProfile
-        // req.user = token_decoded
-        req.user = token_decoded;  //worked both
-        // req.body.userId = token_decoded;
+        req.user = token_decoded;  //worked both //tranfer the userId to getProfile
+        // req.body = { userId: token_decoded.id };    //remove all body data add only userId
+        // req.body.userId = token_decoded;    //remove all body data add only userId
+
 
 
         next();
