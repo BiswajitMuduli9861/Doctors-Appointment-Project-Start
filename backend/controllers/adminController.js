@@ -146,4 +146,5 @@ const adminDashboard = async(req,res)=>{
         res.json({success:false, message:error.message}) 
     }
 }
+
 export {addDoctor,loginAdmin, allDoctors, appointmentAdmin,cancelAppointment, adminDashboard}
