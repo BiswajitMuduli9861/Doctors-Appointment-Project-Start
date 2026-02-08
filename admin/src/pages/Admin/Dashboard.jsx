@@ -47,7 +47,7 @@ const Dashboard = () => {
           <p className='font-semibold'>Latest Booking</p>
         </div>
 
-        <div className='pt-4 border border-t-0'>
+        <div className='pt-4'>
 
           {
             dashData.latestAppointments.map((item, index) => (

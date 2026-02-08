@@ -15,8 +15,11 @@ const Navbar = () => {
   
   return (
 <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-b-gray-400'>
+      <div className='flex items-center' onClick={()=>navigate('/')}>
 
-      <img className='w-44 cursor-pointer' src={assets.logo} alt="logo" />
+      <img className='w-24 cursor-pointer' src='/logo.png' alt="logo" />
+      <h2 className=' text-[#5F6FFF] text-xl font-bold cursor-pointer' style={{marginLeft:"-20px"}}>HealSphere</h2>
+      </div>
       <ul className='hidden md:flex items-start gap-5 font-medium'>
         <NavLink to="/">
           <li className='py-1'>HOME</li>
